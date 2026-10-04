@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="FASERIP: Blackout logo">
+  <rect width="128" height="128" rx="24" fill="#d7262d"/>
+  <polygon points="64,8 76,38 106,22 92,52 122,64 92,76 106,106 76,90 64,120 52,90 22,106 36,76 6,64 36,52 22,22 52,38" fill="#f9d400" stroke="#1b1b1f" stroke-width="4" stroke-linejoin="round"/>
+  <polygon points="72,30 44,70 62,70 54,100 86,56 67,56" fill="#1b1b1f"/>
+</svg>

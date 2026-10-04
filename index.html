@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FASERIP: Blackout</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#f3ead2;
+  --dots:rgba(27,27,31,.09);
+  --panel:#fffaf0;
+  --ink:#1b1b1f;
+  --muted:#5d5648;
+  --red:#d7262d;
+  --blue:#1f4fd1;
+  --white:#ffffff;
+  --bronze:#c96f1e;
+  --silver:#b9b9b9;
+  --gold:#f9d400;
+  --bar:#2e9e4f;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --page:#14151c;
+    --dots:rgba(255,255,255,.06);
+    --panel:#20222d;
+    --ink:#f3ead2;
+    --muted:#aaa392;
+    --red:#ff5a60;
+    --blue:#8aa6ff;
+    --white:#3a3d4c;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#14151c;
+  --dots:rgba(255,255,255,.06);
+  --panel:#20222d;
+  --ink:#f3ead2;
+  --muted:#aaa392;
+  --red:#ff5a60;
+  --blue:#8aa6ff;
+  --white:#3a3d4c;
+}
+*,*::before,*::after{box-sizing:inherit;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+body{
+  margin:0;
+  background-color:var(--page);
+  background-image:radial-gradient(var(--dots) 1.5px,transparent 1.6px);
+  background-size:9px 9px;
+  color:var(--ink);
+  font-family:"Comic Neue","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;
+  font-size:1.05rem;
+  line-height:1.45;
+}
+main{max-width:1060px;margin:0 auto;padding:18px 14px 40px;}
+header{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+h1{
+  font-family:"Bangers","Impact",fantasy;
+  font-weight:400;
+  font-size:clamp(2.4rem,9vw,4rem);
+  line-height:.9;
+  letter-spacing:.03em;
+  margin:0;
+  color:var(--red);
+  text-shadow:3px 3px 0 var(--ink);
+}
+h1 span{color:var(--gold);}
+.tag{margin:0 0 4px;color:var(--muted);font-weight:700;}
+header button{margin-left:auto;}
+h2,h3{font-family:"Bangers","Impact",fantasy;font-weight:400;letter-spacing:.04em;margin:0 0 8px;}
+h2{font-size:1.7rem;}
+h3{font-size:1.25rem;}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start;}
+@media (max-width:820px){.layout{grid-template-columns:minmax(0,1fr);}}
+.panel{
+  background:var(--panel);
+  border:3px solid var(--ink);
+  box-shadow:5px 5px 0 var(--ink);
+  padding:14px;
+  margin-bottom:16px;
+}
+.caption{
+  display:inline-block;
+  background:var(--gold);
+  color:#1b1b1f;
+  border:2px solid var(--ink);
+  padding:1px 10px;
+  font-family:"Bangers","Impact",fantasy;
+  letter-spacing:.05em;
+  margin-bottom:10px;
+}
+p{margin:0 0 10px;}
+small,.muted{color:var(--muted);}
+
+button{
+  font:inherit;
+  font-weight:700;
+  color:var(--ink);
+  background:var(--panel);
+  border:3px solid var(--ink);
+  box-shadow:3px 3px 0 var(--ink);
+  padding:9px 14px;
+  cursor:pointer;
+  text-align:left;
+}
+button:hover{background:var(--gold);color:#1b1b1f;}
+button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+button:disabled{opacity:.45;cursor:default;background:var(--panel);color:var(--ink);}
+button.primary{background:var(--red);color:#fff;}
+button.primary:hover{background:var(--gold);color:#1b1b1f;}
+button:focus-visible,input:focus-visible,label:focus-within{outline:3px solid var(--blue);outline-offset:2px;}
+.choices{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+.choices button small{display:block;font-weight:400;}
+.choices button:hover small{color:#1b1b1f;}
+
+input[type=text]{
+  font:inherit;
+  width:100%;
+  padding:9px;
+  color:var(--ink);
+  background:var(--page);
+  border:3px solid var(--ink);
+}
+.powers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 12px;}
+@media (max-width:520px){.powers{grid-template-columns:1fr;}}
+.powers label{display:block;border:2px solid var(--ink);padding:8px;cursor:pointer;}
+.powers label.on{background:var(--gold);color:#1b1b1f;}
+.powers label.on small{color:#1b1b1f;}
+.powers input{margin-right:6px;}
+.powers small{display:block;}
+
+.log{margin:0 0 10px;padding:0;list-style:none;max-height:340px;overflow-y:auto;}
+.log li{padding:5px 0;border-bottom:1px dashed var(--muted);}
+.log li:last-child{border-bottom:0;}
+.chip{
+  display:inline-block;
+  min-width:5.6em;
+  text-align:center;
+  border:2px solid #1b1b1f;
+  color:#1b1b1f;
+  padding:0 6px;
+  margin-right:6px;
+  font-weight:700;
+  font-size:.9rem;
+}
+.c0{background:#fff;}
+.c1{background:var(--bronze);}
+.c2{background:var(--silver);}
+.c3{background:var(--gold);}
+
+.foes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px;}
+.foe{display:block;width:100%;padding:8px;}
+.foe.sel{background:var(--gold);color:#1b1b1f;}
+.foe.out{opacity:.5;box-shadow:none;}
+.foe b{display:block;}
+.foe small{display:block;font-weight:400;}
+.foe.sel small{color:#1b1b1f;}
+.bar{height:10px;border:2px solid var(--ink);background:var(--white);margin:5px 0 3px;}
+.bar i{display:block;height:100%;background:var(--bar);}
+.actions{display:flex;flex-wrap:wrap;gap:8px;}
+.karma{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0 0;font-size:.95rem;}
+.karma button{padding:4px 9px;box-shadow:2px 2px 0 var(--ink);border-width:2px;}
+.karma button.on{background:var(--blue);color:#fff;}
+
+.sheet dl{display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;margin:0 0 10px;}
+.sheet dt{font-weight:700;}
+.sheet dd{margin:0;}
+.sheet dd.v{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);}
+.stat{display:flex;justify-content:space-between;font-weight:700;}
+.sheet ul{margin:0;padding-left:18px;}
+
+.chartwrap{overflow-x:auto;}
+table.chart{border-collapse:collapse;width:100%;min-width:640px;font-size:.78rem;table-layout:fixed;}
+.chart th,.chart td{border:1px solid #1b1b1f;text-align:center;padding:1px 0;height:17px;}
+.chart th{background:#f6b7a5;color:#1b1b1f;font-weight:700;}
+.chart th.on{background:var(--blue);color:#fff;}
+.chart td.w0{background:#fff;}
+.chart td.w1{background:var(--bronze);}
+.chart td.w2{background:var(--silver);}
+.chart td.w3{background:var(--gold);}
+.chart td.hit{outline:3px solid var(--blue);outline-offset:-3px;}
+.roller{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;}
+select{font:inherit;padding:7px;color:var(--ink);background:var(--page);border:3px solid var(--ink);}
+details{margin-top:10px;}
+summary{cursor:pointer;font-weight:700;}
+footer{color:var(--muted);font-size:.85rem;}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <p class="tag">A solo superhero adventure using the FASERIP rules</p>
+      <h1>FASERIP: <span>Blackout</span></h1>
+    </div>
+    <button type="button" id="restart">New hero</button>
+  </header>
+
+  <div class="layout">
+    <div id="stage"></div>
+    <aside id="sheet"></aside>
+  </div>
+
+  <section class="panel">
+    <span class="caption">The universal chart</span>
+    <p id="chartNote" class="muted">Every feat is a roll of 1 to 100 read against the column for the rank being used.</p>
+    <div class="chartwrap"><table class="chart" id="chart"></table></div>
+    <div class="roller">
+      <label for="rollRank">Roll a feat at</label>
+      <select id="rollRank"></select>
+      <button type="button" id="rollBtn">Roll</button>
+      <span id="rollOut"></span>
+    </div>
+    <details>
+      <summary>How the rules work</summary>
+      <p>Everything is measured on a scale of named ranks, each with a value: Average is 6, World Class is 30, Fantastic is 40. Your hero has seven abilities: Fighting, Agility, Strength, Endurance, Reason, Intuition and Psyche. Health is the values of the first four added together. Karma starts as the last three added together.</p>
+      <p>To attempt a feat, roll 1 to 100 and read the column for your rank. White fails. Bronze just succeeds, Silver succeeds with room to spare, and Gold succeeds with ease. A rank shift (RS) moves you a column left or right before you roll.</p>
+      <p>A ranked feat is set against a difficulty rank. Two or more ranks above it succeeds without a roll; one above needs Bronze; equal needs Silver; one below needs Gold; lower than that cannot succeed.</p>
+      <p>In a fight, a hit does its damage rank's value, less the target's armour. Silver and Gold hits can also slam, stun or kill, which the target resists with a feat of Strength or Endurance. Lethal attacks that drop a foe leave them dying. Killing costs a hero all their karma, so give first aid.</p>
+      <p>Before a roll you can spend karma to guarantee a result. You pay the gap between your roll and the number you need, with a minimum of 10. In a fight you can also leave karma on guard, so it is spent to keep you conscious when a stun or killing blow would otherwise knock you out.</p>
+    </details>
+  </section>
+
+  <footer>
+    <p>Game rules are Open Game Content from FASERIP by Gurbintroll Games, used under the Open Game License 1.0a. See OGL.txt in the repository. The adventure and its characters are original to this game.</p>
+  </footer>
+</main>
+
+<script>
+// ---------- Rules ----------
+// name, abbreviation, value, lowest roll for Bronze, Silver, Gold
+const RANKS = [
+  ["Zero","Ze",0,66,98,100],["Terrible","Te",2,61,95,100],["Bad","Bd",4,56,91,100],
+  ["Average","Av",6,51,86,98],["Decent","Dc",10,46,81,98],["Great","Gt",20,41,76,95],
+  ["World Class","Wc",30,36,71,95],["Fantastic","Fa",40,31,66,91],["Astounding","As",50,26,61,91],
+  ["Wondrous","Wo",75,21,56,86],["Phenomenal","Ph",100,16,51,86],["Single Shift","Ss",150,11,46,81],
+  ["Double Shift","Ds",200,7,46,81],["Triple Shift","Ts",500,4,41,76],["Planetary","Pl",1000,2,41,76],
+  ["Stellar","St",3000,2,36,71],["Cosmic","Co",5000,2,31,66],["Infinite","In",Infinity,2,26,61]
+];
+const BANDS = [1,3,6,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,94,97,99,100];
+const COLOURS = ["White","Bronze","Silver","Gold"];
+const ABILITIES = [["F","Fighting"],["A","Agility"],["S","Strength"],["E","Endurance"],["R","Reason"],["I","Intuition"],["P","Psyche"]];
+const CAMPAIGN = 6; // World Class
+const val = r => RANKS[r][2];
+const rname = r => RANKS[r][0];
+const d100 = () => 1 + Math.floor(Math.random() * 100);
+
+function colourOf(rank, roll) {
+  const r = RANKS[rank];
+  return roll >= r[5] ? 3 : roll >= r[4] ? 2 : roll >= r[3] ? 1 : 0;
+}
+// Shifts apply to the rank, never below Zero, never past Triple Shift,
+// and Planetary or higher cannot be shifted at all.
+function shift(rank, rs) {
+  if (rank >= 14) return rank;
+  return Math.max(0, Math.min(13, rank + rs));
+}
+
+// What each attack type can do at Bronze, Silver and Gold.
+const EFFECTS = {
+  bm: [[], ["slam"], ["slam", "stun"]],   // blunt melee
+  lm: [[], ["stun"], ["stun", "kill"]],   // lethal melee
+  bp: [[], [], ["stun"]],                 // blunt projectile
+  lp: [[], [], ["kill"]],                 // lethal projectile
+  mb: [[], [], ["stun"]]                  // mental blast (this game's simplification)
+};
+
+const POWERS = {
+  Blast:        "Fantastic ranged energy attack. Roll Agility; does 40 blunt damage.",
+  Strike:       "Fantastic claws or blade. Roll Fighting; does 40 lethal damage. Can leave foes dying.",
+  "Mental Blast": "Fantastic psychic attack. Roll Psyche; does 40 damage and ignores armour.",
+  Resistance:   "Great armour. Every hit on you does 20 less damage.",
+  Regeneration: "Recover 10 health at the end of every round of a fight.",
+  Flight:       "World Class flight. Opens up ways around trouble, and melee attacks on you take −1 RS."
+};
+
+const FOES = {
+  goonStick: { name: "Goon with a nightstick", ab: [4,3,4,4,3,3,4], armour: 0,
+    atk: { name: "nightstick", type: "bm", abil: "F", dmg: 10 } },
+  goonGun: { name: "Goon with a pistol", ab: [4,3,4,4,3,3,4], armour: 0,
+    atk: { name: "pistol", type: "lp", abil: "A", dmg: 20 } },
+  leader: { name: "Gang leader", ab: [4,3,5,5,4,3,4], armour: 0,
+    atk: { name: "stolen blaster", type: "bp", abil: "A", dmg: 30 } },
+  ninja: { name: "Ninja", ab: [5,5,4,4,3,3,4], armour: 0,
+    atk: { name: "sword", type: "lm", abil: "F", dmg: 10 } },
+  static: { name: "Doctor Static", ab: [5,5,4,6,7,5,6], armour: 10,
+    atk: { name: "lightning blast", type: "bp", abil: "A", dmg: 30 } }
+};
+
+const FIGHTS = {
+  lobby: { title: "The Great Hall", foes: ["goonStick", "goonStick", "goonGun"], next: "afterLobby" },
+  vault: { title: "The Vault Door", foes: ["leader", "ninja"], next: "afterVault" },
+  roof:  { title: "The Dynamo Room", foes: ["static"], next: "ending" },
+  roofGuarded: { title: "The Dynamo Room", foes: ["static", "goonStick"], next: "ending" }
+};
+
+// ---------- State ----------
+const SAVE_KEY = "faserip-blackout-v1";
+let S = null;
+let draft = null;
+let lastRoll = null;
+
+function save() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {}
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    const data = raw ? JSON.parse(raw) : null;
+    return data && data.hero && data.mode ? data : null;
+  } catch (e) { return null; }
+}
+
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+function log(html) {
+  S.log.push(html);
+  if (S.log.length > 60) S.log.shift();
+}
+const chip = (roll, c) => '<span class="chip c' + c + '">' + roll + " " + COLOURS[c] + "</span>";
+
+// Roll a feat. If the hero has asked karma to guarantee a colour, pay the gap
+// between the roll and the number needed (minimum 10).
+function feat(rank, label, useKarma) {
+  const roll = d100();
+  let final = roll, note = "";
+  const want = useKarma ? S.want : 0;
+  if (want && S.hero.karma >= 10) {
+    const need = RANKS[rank][2 + want];
+    const cost = Math.max(10, need - roll);
+    if (cost <= S.hero.karma) {
+      S.hero.karma -= cost;
+      final = Math.max(roll, need);
+      note = final > roll ? " Karma lifts a roll of " + roll + " (" + cost + " spent)." : " The roll held on its own, but the karma is spent (" + cost + ").";
+    } else {
+      S.hero.karma -= 10;
+      note = " Not enough karma to close the gap (10 spent).";
+    }
+  }
+  if (useKarma) S.want = 0;
+  const c = colourOf(rank, final);
+  lastRoll = { rank, roll: final };
+  log(chip(final, c) + esc(label) + " at " + rname(rank) + "." + note);
+  return c;
+}
+
+// The hero resisting a stun or a killing blow. With the guard on, karma is
+// spent to turn a White into a Bronze when there is enough to cover the gap.
+function resistFeat(def, rank, label) {
+  if (!def.isHero || !S.guard) return feat(rank, label, false);
+  const roll = d100();
+  const need = RANKS[rank][3];
+  const cost = Math.max(10, need - roll);
+  let final = roll, note = "";
+  if (roll < need && cost <= S.hero.karma) {
+    S.hero.karma -= cost;
+    final = need;
+    note = " Karma keeps you standing (" + cost + " spent on a roll of " + roll + ").";
+  }
+  const c = colourOf(rank, final);
+  lastRoll = { rank, roll: final };
+  log(chip(final, c) + esc(label) + " at " + rname(rank) + "." + note);
+  return c;
+}
+
+// Ranked feat against a difficulty. Returns true on success.
+function rankedFeat(rank, difficulty, label) {
+  const gap = rank - difficulty;
+  if (gap >= 2) { log("<b>" + esc(label) + ":</b> two ranks clear of the difficulty, so no roll is needed."); return true; }
+  if (gap <= -2) { log("<b>" + esc(label) + ":</b> more than a rank short of " + rname(difficulty) + ". It cannot be done."); return false; }
+  const need = gap === 1 ? 1 : gap === 0 ? 2 : 3;
+  if (S.want) S.want = need;
+  const c = feat(rank, label + " against " + rname(difficulty) + " (needs " + COLOURS[need] + ")", true);
+  return c >= need;
+}
+
+// ---------- Hero creation ----------
+function newDraft() {
+  draft = { name: "", ab: null, notes: [], powers: [] };
+  rollAbilities();
+}
+function rollAbilities() {
+  const ab = ABILITIES.map(() => CAMPAIGN);
+  const notes = [];
+  const pick = roll => roll <= 14 ? 0 : roll <= 28 ? 1 : roll <= 44 ? 2 : roll <= 58 ? 3 : roll <= 72 ? 4 : roll <= 86 ? 5 : 6;
+  for (let i = 0; i < 6; i++) {
+    const roll = d100(), a = pick(roll), up = i < 3;
+    ab[a] = up ? Math.min(10, ab[a] + 1) : Math.max(1, ab[a] - 1);
+    notes.push(roll + ": " + ABILITIES[a][1] + (up ? " +1" : " −1"));
+  }
+  draft.ab = ab;
+  draft.notes = notes;
+}
+function makeHero() {
+  const ab = {};
+  ABILITIES.forEach(([k], i) => ab[k] = draft.ab[i]);
+  const health = val(ab.F) + val(ab.A) + val(ab.S) + val(ab.E);
+  return {
+    name: draft.name.trim() || "The Unnamed", isHero: true, ab,
+    health, max: health, karma: val(ab.R) + val(ab.I) + val(ab.P),
+    powers: draft.powers.slice(), armour: draft.powers.includes("Resistance") ? 20 : 0,
+    skip: false, down: false, dodge: 0, aim: false
+  };
+}
+function beginGame() {
+  S = { mode: "scene", scene: "intro", hero: makeHero(), log: [], want: 0, guard: true, flags: {}, fight: null, retry: null };
+  draft = null;
+  go("intro");
+}
+
+// ---------- Scenes ----------
+const has = p => S.hero.powers.includes(p);
+function award(n, why) {
+  S.hero.karma += n;
+  log("<b>+" + n + " karma:</b> " + esc(why));
+}
+function recover(n, why) {
+  const gain = Math.min(S.hero.max - S.hero.health, n);
+  S.hero.health += gain;
+  if (gain) log(esc(why) + " You recover " + gain + " health.");
+}
+function hurtHero(dmg, what) {
+  const taken = Math.max(0, dmg - S.hero.armour);
+  S.hero.health = Math.max(1, S.hero.health - taken);
+  log(esc(what) + " You take " + taken + " damage" + (S.hero.armour ? " after armour." : "."));
+}
+
+const SCENES = {
+  intro: {
+    title: "Lights Out",
+    text: () => [
+      "Ten past midnight, and every light in Harbor City dies at once. Trams coast to a stop. From your rooftop you watch the dark roll out to the docks.",
+      "One building still glows: the Calloway Museum, lit an unsteady blue from the inside. Its alarm rings for four seconds and is cut off.",
+      "Through the skylight you count three figures in the Great Hall, prying open the case that holds the Tessel Dynamo, a prototype generator that never worked. Tonight something is making it work."
+    ],
+    choices: () => [
+      { label: "Walk in through the front doors", hint: "You throw the first punch, so you act first.", run: () => startFight("lobby", {}) },
+      { label: "Slip in through the skylight", hint: "Agility feat. Succeed and you catch them by surprise.", feat: true, run: () => {
+          const c = feat(S.hero.ab.A, "Slipping through the skylight (Agility)", true);
+          if (c > 0) { log("You land without a sound behind the pistol-carrier."); startFight("lobby", { surprise: true }, true); }
+          else { log("The latch snaps and glass rains into the hall. Three heads turn."); startFight("lobby", { foesFirst: true }, true); }
+        } },
+      has("Flight") && { label: "Drift down from the rafters", hint: "Flight. No roll needed; you catch them by surprise.", run: () => {
+          log("You float down through the open skylight and hang in the dark above them.");
+          startFight("lobby", { surprise: true }, true);
+        } }
+    ]
+  },
+  afterLobby: {
+    title: "The Night Guard",
+    enter: () => { award(30, "you broke up an armed robbery."); award(15, "three goons left tied up for the police."); recover(val(S.hero.ab.E), "You shake out your arms."); },
+    text: () => [
+      "The goons are down. In the quiet you hear a groan from behind the ticket desk.",
+      "A night guard lies pinned under a toppled bronze horseman, a statue the weight of a grand piano. He is conscious and trying not to panic."
+    ],
+    choices: () => [
+      { label: "Lift the statue off him", hint: "Ranked Strength feat against World Class.", feat: true, run: () => {
+          guardResult(rankedFeat(S.hero.ab.S, 6, "Lifting the statue (Strength)"));
+        } },
+      { label: "Lever it up with a barrier pole", hint: "Reason feat.", feat: true, run: () => {
+          guardResult(feat(S.hero.ab.R, "Rigging a lever (Reason)", true) > 0);
+        } }
+    ]
+  },
+  guardFree: {
+    title: "The Night Guard",
+    enter: () => { S.flags.rescued = true; award(20, "you rescued the guard."); },
+    text: () => [
+      "The horseman tilts and the guard drags himself clear. \"They took the Dynamo downstairs,\" he says. \"To the vault. There's a man in a coat who throws sparks.\"",
+      "He points you to the service corridor."
+    ],
+    choices: () => [{ label: "Head for the vault", run: () => go("corridor") }]
+  },
+  guardStuck: {
+    title: "The Night Guard",
+    text: () => [
+      "The statue will not move. You wedge a bench under its shoulder to take the weight off him and promise to send help.",
+      "\"The vault,\" he says through his teeth. \"Man in a coat. Throws sparks.\""
+    ],
+    choices: () => [{ label: "Head for the vault", run: () => go("corridor") }]
+  },
+  corridor: {
+    title: "The Service Corridor",
+    text: () => [
+      "The corridor to the vault is forty feet of bare concrete. The museum's own security is dead, but the air ahead smells of ozone and something hums in the walls.",
+      "Voices carry from the far end. Two of them."
+    ],
+    choices: () => [
+      { label: "Stop and study the corridor", hint: "Intuition feat. Succeed and you reach the vault unheard.", feat: true, run: () => {
+          const c = feat(S.hero.ab.I, "Reading the corridor (Intuition)", true);
+          if (c > 0) { log("Hair-thin arcs of current cross the passage at knee height, fed from a junction box. You pull its fuse and walk through."); startFight("vault", { surprise: true }, true); }
+          else { hurtHero(30, "You see nothing wrong until the current finds you."); log("Your shout brings them running."); startFight("vault", { foesFirst: true }, true); }
+        } },
+      { label: "Sprint for the far door", hint: "Agility feat. Fail and you take World Class damage.", feat: true, run: () => {
+          const c = feat(S.hero.ab.A, "Running the corridor (Agility)", true);
+          if (c > 0) { log("Something crackles at your heels, a step too slow."); startFight("vault", {}, true); }
+          else { hurtHero(30, "A web of current snaps shut across the passage."); log("Your shout brings them running."); startFight("vault", { foesFirst: true }, true); }
+        } }
+    ]
+  },
+  afterVault: {
+    title: "The Empty Vault",
+    enter: () => { award(10, "two more for the police."); recover(val(S.hero.ab.E), "You lean on the vault door for a moment."); },
+    text: () => [
+      "The vault is open and the Dynamo is gone. Scorch marks climb the freight lift's cables toward the roof, where the blue light is brightest.",
+      "Your pulse is hammering. You could take a minute to get your wind back. Whoever is up there would use that minute too."
+    ],
+    choices: () => [
+      { label: "Go up now", hint: "Face Doctor Static alone.", run: () => go("dynamo") },
+      { label: "Catch your breath first", hint: "Recover all your health. He will have time to call in help.", run: () => {
+          S.flags.rested = true;
+          recover(S.hero.max, "You sit against the vault door until your hands stop shaking.");
+          go("dynamo", true);
+        } }
+    ]
+  },
+  dynamo: {
+    title: "The Dynamo Room",
+    text: () => [
+      "The lift opens on the old plant room under the museum's dome. The Tessel Dynamo spins at its centre, drinking the city's power through cables as thick as your arm.",
+      "A thin man in a rubberised coat turns from the controls. Lightning crawls between his fingers. \"Every light in the city,\" says Doctor Static, \"and they still sent only one of you.\"",
+      S.flags.rested ? "A goon steps out from behind the switchgear, slapping a nightstick into his palm." : "He is alone."
+    ],
+    choices: () => [
+      { label: "End this", run: () => startFight(S.flags.rested ? "roofGuarded" : "roof", {}) }
+    ]
+  },
+  ending: {
+    title: "Lights On",
+    enter: () => { award(40, "you defeated Doctor Static."); award(30, "you gave the city its power back."); },
+    text: () => {
+      const out = [
+        "Doctor Static folds. You throw the Dynamo's breaker and the cables go slack. Out past the dome, Harbor City comes back on, street by street."
+      ];
+      out.push(S.flags.rescued ? "Paramedics are already with the night guard when you leave. He raises a hand as you pass." : "You send the first paramedics you see to the ticket desk, where the guard is still pinned.");
+      if (S.flags.killed) out.push("Someone died by your hand tonight. Whatever the papers say tomorrow, your karma knows it.");
+      out.push("You finish the night with " + S.hero.karma + " karma and " + S.hero.health + " of " + S.hero.max + " health.");
+      return out;
+    },
+    choices: () => [{ label: "Play again with a new hero", run: () => { newDraft(); S = null; try { localStorage.removeItem(SAVE_KEY); } catch (e) {} render(); } }]
+  }
+};
+
+function guardResult(ok) { go(ok ? "guardFree" : "guardStuck", true); }
+
+function go(id, keepLog) {
+  S.mode = "scene";
+  S.scene = id;
+  S.fight = null;
+  if (!keepLog) S.log = [];
+  const sc = SCENES[id];
+  if (sc.enter) sc.enter();
+  save();
+  render();
+}
+
+// ---------- Combat ----------
+function startFight(key, opts, keepLog) {
+  if (!keepLog) S.log = [];
+  const h = S.hero;
+  h.skip = false; h.down = false; h.dodge = 0; h.aim = false;
+  S.retry = { hero: JSON.parse(JSON.stringify(h)), key, opts, flags: Object.assign({}, S.flags) };
+  const foes = FIGHTS[key].foes.map((id, i) => {
+    const t = FOES[id];
+    const ab = {};
+    ABILITIES.forEach(([k], j) => ab[k] = t.ab[j]);
+    const health = val(ab.F) + val(ab.A) + val(ab.S) + val(ab.E);
+    const twin = FIGHTS[key].foes.filter(x => x === id).length > 1;
+    const n = FIGHTS[key].foes.slice(0, i + 1).filter(x => x === id).length;
+    return { id, name: t.name + (twin ? " " + n : ""), ab, health, max: health, armour: t.armour, atk: t.atk,
+      skip: false, down: false, out: false, dying: false, dead: false, eNow: ab.E };
+  });
+  S.mode = "fight";
+  S.fight = { key, foes, target: 0, round: 1, surprise: !!opts.surprise };
+  if (opts.foesFirst) {
+    log("<b>They act first.</b>");
+    foesAct();
+    if (h.health <= 0) S.mode = "defeat";
+  } else if (opts.surprise) log("<b>Surprise:</b> +1 RS on your first action.");
+  save();
+  render();
+}
+
+const heroAttacks = () => {
+  const h = S.hero, list = [];
+  list.push({ id: "punch", name: "Punch", hint: "Fighting, " + val(h.ab.S) + " blunt", type: "bm", rank: h.ab.F, dmg: val(h.ab.S) });
+  if (has("Blast")) list.push({ id: "blast", name: "Blast", hint: "Agility, 40 blunt", type: "bp", rank: h.ab.A, dmg: 40, ranged: true });
+  if (has("Strike")) list.push({ id: "strike", name: "Strike", hint: "Fighting, 40 lethal", type: "lm", rank: h.ab.F, dmg: 40 });
+  if (has("Mental Blast")) list.push({ id: "mental", name: "Mental Blast", hint: "Psyche, 40, ignores armour", type: "mb", rank: h.ab.P, dmg: 40, pierce: true });
+  return list;
+};
+
+function knockOut(def, dying) {
+  def.health = 0;
+  def.out = true;
+  if (dying && !def.isHero) { def.dying = true; log("<b>" + esc(def.name) + " is dying.</b> Give first aid before their Endurance runs out."); }
+}
+
+function resolveAttack(att, def, atk, rs) {
+  const rank = shift(atk.rank, rs);
+  const c = feat(rank, att.name + " attacks " + def.name + " with " + atk.name, !!att.isHero);
+  if (c === 0) return;
+  const armour = atk.pierce ? 0 : def.armour;
+  const dmg = Math.max(0, atk.dmg - armour);
+  def.health = Math.max(0, def.health - dmg);
+  log(esc(def.name) + " takes " + dmg + " damage" + (armour ? " (" + Math.min(armour, atk.dmg) + " stopped by armour)." : "."));
+  if (def.health === 0) { knockOut(def, atk.type === "lm"); log("<b>" + esc(def.name) + " is down.</b>"); return; }
+  if (armour > atk.dmg) return;
+  for (const fx of EFFECTS[atk.type][c - 1]) {
+    if (def.out) break;
+    if (fx === "slam") {
+      const r = feat(def.ab.S, def.name + " resists a slam (Strength)", false);
+      if (r === 0) { def.skip = true; log(esc(def.name) + " is knocked flying and loses their next action."); }
+      else if (r === 1) { def.down = true; log(esc(def.name) + " is knocked down: −1 RS on their next action."); }
+    } else if (fx === "stun") {
+      const r = resistFeat(def, def.ab.E, def.name + " resists a stun (Endurance)");
+      if (r === 0) { knockOut(def, false); log("<b>" + esc(def.name) + " is knocked out cold.</b>"); }
+      else if (r === 1) { def.skip = true; log(esc(def.name) + " is stunned and loses their next action."); }
+    } else if (fx === "kill") {
+      const r = resistFeat(def, def.ab.E, def.name + " resists a killing blow (Endurance)");
+      if (r === 0) { knockOut(def, true); if (def.isHero) log("<b>The wound is mortal.</b>"); }
+      else if (r === 1) { knockOut(def, false); log("<b>" + esc(def.name) + " drops, badly hurt but alive.</b>"); }
+    }
+  }
+}
+
+function foesAct() {
+  const h = S.hero;
+  for (const f of S.fight.foes) {
+    if (f.out) continue;
+    if (f.skip) { f.skip = false; log(esc(f.name) + " loses this action."); continue; }
+    let rs = (f.atk.rs || 0) - h.dodge - (f.down ? 1 : 0);
+    if (has("Flight") && (f.atk.type === "bm" || f.atk.type === "lm")) rs -= 1;
+    f.down = false;
+    resolveAttack(f, h, Object.assign({ rank: f.ab[f.atk.abil] }, f.atk), rs);
+    if (h.health <= 0) return;
+  }
+}
+
+function endRound() {
+  const h = S.hero, fight = S.fight;
+  for (const f of fight.foes) {
+    if (!f.dying) continue;
+    f.eNow--;
+    if (f.eNow <= 0) {
+      f.dying = false; f.dead = true;
+      h.karma = 0;
+      S.flags.killed = true;
+      log("<b>" + esc(f.name) + " dies.</b> A hero who kills loses all karma.");
+    } else {
+      log(esc(f.name) + " is slipping away (Endurance now " + rname(f.eNow) + ").");
+    }
+  }
+  if (has("Regeneration") && h.health > 0 && h.health < h.max) {
+    const gain = Math.min(10, h.max - h.health);
+    h.health += gain;
+    log("You regenerate " + gain + " health.");
+  }
+  fight.round++;
+}
+
+function heroAct(id) {
+  const h = S.hero, fight = S.fight;
+  S.log = [];
+  h.dodge = 0;
+  let rs = (fight.surprise ? 1 : 0) - (h.down ? 1 : 0);
+  if (h.skip) {
+    h.skip = false;
+    log("You lose this action picking yourself up.");
+  } else if (id === "dodge") {
+    const c = feat(h.ab.A, "You dodge (Agility)", true);
+    h.dodge = c * 2;
+    log(c ? "Attacks on you take −" + h.dodge + " RS until your next action." : "You cannot find the rhythm. No penalty to their attacks.");
+    h.down = false; fight.surprise = false;
+  } else if (id === "aim") {
+    h.aim = true;
+    log("You take aim: +1 RS on a Blast next action.");
+    h.down = false; fight.surprise = false;
+  } else if (id === "aid") {
+    const f = fight.foes.find(x => x.dying);
+    if (f) { f.dying = false; log("You stop the bleeding. " + esc(f.name) + " will live."); }
+    h.down = false; fight.surprise = false;
+  } else {
+    const atk = heroAttacks().find(a => a.id === id);
+    let target = fight.foes[fight.target];
+    if (!target || target.out) target = fight.foes.find(f => !f.out);
+    if (atk.ranged && h.aim) rs += 1;
+    resolveAttack(h, target, atk, rs);
+    h.down = false; fight.surprise = false;
+  }
+  if (id !== "aim") h.aim = false;
+  const nextUp = fight.foes.findIndex(f => !f.out);
+  if (nextUp >= 0 && (!fight.foes[fight.target] || fight.foes[fight.target].out)) fight.target = nextUp;
+
+  if (nextUp < 0) return winFight();
+  foesAct();
+  if (h.health <= 0) { S.mode = "defeat"; save(); render(); return; }
+  endRound();
+  save();
+  render();
+}
+
+function winFight() {
+  const fight = S.fight;
+  for (const f of fight.foes) {
+    if (f.dying) { f.dying = false; }
+  }
+  go(FIGHTS[fight.key].next);
+}
+
+function retryFight() {
+  const r = S.retry;
+  S.hero = JSON.parse(JSON.stringify(r.hero));
+  // A second wind: come back with at least three quarters of your health.
+  S.hero.health = Math.max(S.hero.health, Math.round(S.hero.max * 0.75));
+  S.flags = Object.assign({}, r.flags);
+  startFight(r.key, r.opts);
+}
+
+// ---------- Rendering ----------
+const $ = id => document.getElementById(id);
+
+function karmaBar() {
+  const k = S.hero.karma;
+  if (k < 10) return '<p class="karma muted">You need at least 10 karma to guarantee a result.</p>';
+  const opts = ["No karma", "Bronze", "Silver", "Gold"];
+  return '<div class="karma"><span>Guarantee your next roll (' + k + " karma):</span>" +
+    opts.map((o, i) => '<button type="button" data-act="want" data-arg="' + i + '" class="' + (S.want === i ? "on" : "") + '" aria-pressed="' + (S.want === i) + '">' + o + "</button>").join("") + "</div>";
+}
+const logHtml = () => S.log.length ? '<ul class="log">' + S.log.map(l => "<li>" + l + "</li>").join("") + "</ul>" : "";
+
+function renderCreate() {
+  const d = draft;
+  const rows = ABILITIES.map(([k, n], i) => "<dt>" + n + "</dt><dd>" + rname(d.ab[i]) + '</dd><dd class="v">' + val(d.ab[i]) + "</dd>").join("");
+  const health = d.ab.slice(0, 4).reduce((s, r) => s + val(r), 0);
+  const karma = d.ab.slice(4).reduce((s, r) => s + val(r), 0);
+  const powers = Object.keys(POWERS).map(p => {
+    const on = d.powers.includes(p);
+    return '<label class="' + (on ? "on" : "") + '"><input type="checkbox" data-power="' + p + '"' + (on ? " checked" : "") +
+      (!on && d.powers.length >= 2 ? " disabled" : "") + "><b>" + p + "</b><small>" + POWERS[p] + "</small></label>";
+  }).join("");
+  $("stage").innerHTML =
+    '<section class="panel"><span class="caption">Issue #1</span><h2>Make your hero</h2>' +
+    '<p><label for="name">Hero name</label><input type="text" id="name" maxlength="30" value="' + esc(d.name) + '" placeholder="Captain Somebody"></p>' +
+    "<h3>Abilities</h3><p class=\"muted\">Every ability starts at World Class. Three random abilities go up a rank and three go down.</p>" +
+    '<div class="sheet"><dl>' + rows + "</dl></div>" +
+    '<p class="muted">Rolls: ' + d.notes.join(", ") + ". Health " + health + ", karma " + karma + ".</p>" +
+    '<button type="button" data-act="reroll">Roll abilities again</button>' +
+    '<h3 style="margin-top:16px">Powers</h3><p class="muted">Choose two.</p><div class="powers">' + powers + "</div>" +
+    '<button type="button" class="primary" data-act="begin"' + (d.powers.length === 2 ? "" : " disabled") + ">Begin the adventure</button></section>";
+  $("sheet").innerHTML = "";
+}
+
+function renderSheet() {
+  const h = S.hero;
+  const rows = ABILITIES.map(([k, n]) => "<dt>" + n + "</dt><dd>" + rname(h.ab[k]) + '</dd><dd class="v">' + val(h.ab[k]) + "</dd>").join("");
+  $("sheet").innerHTML =
+    '<section class="panel sheet"><span class="caption">Hero</span><h2>' + esc(h.name) + "</h2>" +
+    '<div class="stat"><span>Health</span><span>' + h.health + " / " + h.max + "</span></div>" +
+    '<div class="bar"><i style="width:' + Math.round(100 * h.health / h.max) + '%"></i></div>' +
+    '<div class="stat" style="margin-bottom:10px"><span>Karma</span><span>' + h.karma + "</span></div>" +
+    "<dl>" + rows + "</dl><h3>Powers</h3><ul>" + h.powers.map(p => "<li><b>" + p + ".</b> " + POWERS[p] + "</li>").join("") + "</ul></section>";
+}
+
+function renderScene() {
+  const sc = SCENES[S.scene];
+  const choices = sc.choices().filter(Boolean);
+  const anyFeat = choices.some(c => c.feat);
+  $("stage").innerHTML =
+    '<section class="panel"><span class="caption">' + esc(sc.title) + "</span>" + logHtml() +
+    sc.text().map(t => "<p>" + esc(t) + "</p>").join("") +
+    '<div class="choices">' + choices.map((c, i) => '<button type="button" data-act="choice" data-arg="' + i + '">' + esc(c.label) +
+      (c.hint ? "<small>" + esc(c.hint) + "</small>" : "") + "</button>").join("") + "</div>" +
+    (anyFeat ? karmaBar() : "") + "</section>";
+}
+
+function renderFight() {
+  const fight = S.fight, h = S.hero;
+  const foes = fight.foes.map((f, i) => {
+    const tags = [];
+    if (f.dead) tags.push("dead"); else if (f.dying) tags.push("dying"); else if (f.out) tags.push("out");
+    if (f.skip) tags.push("loses next action");
+    if (f.down) tags.push("knocked down");
+    if (f.armour) tags.push("armour " + f.armour);
+    return '<button type="button" class="foe' + (i === fight.target && !f.out ? " sel" : "") + (f.out ? " out" : "") + '" data-act="target" data-arg="' + i + '"' +
+      (f.out ? " disabled" : "") + ' aria-pressed="' + (i === fight.target) + '"><b>' + esc(f.name) + "</b>" +
+      '<div class="bar"><i style="width:' + Math.round(100 * f.health / f.max) + '%"></i></div>' +
+      "<small>" + f.health + " / " + f.max + " health. " + f.atk.name + ", " + f.atk.dmg + " damage." + (tags.length ? " " + tags.join(", ") + "." : "") + "</small></button>";
+  }).join("");
+  let actions;
+  if (h.skip) {
+    actions = '<button type="button" class="primary" data-act="do" data-arg="skip">Get back up (lose this action)</button>';
+  } else {
+    const list = heroAttacks().map(a => '<button type="button" class="primary" data-act="do" data-arg="' + a.id + '">' + a.name + "<small>" + a.hint + "</small></button>");
+    list.push('<button type="button" data-act="do" data-arg="dodge">Dodge<small>Agility; attacks on you take a penalty</small></button>');
+    if (has("Blast")) list.push('<button type="button" data-act="do" data-arg="aim">Aim<small>+1 RS on your next Blast</small></button>');
+    if (fight.foes.some(f => f.dying)) list.push('<button type="button" data-act="do" data-arg="aid">Give first aid<small>Save a dying foe</small></button>');
+    actions = list.join("");
+  }
+  const status = [];
+  if (h.down) status.push("You are knocked down: −1 RS on this action.");
+  if (h.aim) status.push("You are aiming.");
+  if (fight.surprise) status.push("Surprise: +1 RS on this action.");
+  $("stage").innerHTML =
+    '<section class="panel"><span class="caption">' + esc(FIGHTS[fight.key].title) + ", round " + fight.round + "</span>" +
+    '<p class="muted">Pick a target, then an action.</p><div class="foes">' + foes + "</div>" + logHtml() +
+    (status.length ? "<p><b>" + status.join(" ") + "</b></p>" : "") +
+    '<div class="actions choices" style="flex-direction:row">' + actions + "</div>" + (h.skip ? "" : karmaBar()) +
+    '<p class="karma"><label><input type="checkbox" data-guard' + (S.guard ? " checked" : "") + "> Spend karma to stay conscious when a stun or killing blow would knock you out</label></p></section>";
+}
+
+function renderDefeat() {
+  $("stage").innerHTML =
+    '<section class="panel"><span class="caption">Down for the count</span>' + logHtml() +
+    "<p>The floor comes up to meet you and the blue light goes out. This is not how the story ends.</p>" +
+    '<div class="choices"><button type="button" class="primary" data-act="retry">Try the fight again<small>You start it with at least three quarters of your health.</small></button>' +
+    '<button type="button" data-act="new">Start over with a new hero</button></div></section>';
+}
+
+function renderChart() {
+  let h = "<tr><th></th>" + RANKS.map((r, i) => '<th class="' + (lastRoll && lastRoll.rank === i ? "on" : "") + '" title="' + r[0] + '">' + r[1] + "</th>").join("") + "</tr>";
+  h += "<tr><th></th>" + RANKS.map(r => "<th>" + (r[2] === Infinity ? "∞" : r[2]) + "</th>").join("") + "</tr>";
+  let lo = 1;
+  for (const hi of BANDS) {
+    const label = (hi === 100 ? "00" : (lo === hi ? String(lo).padStart(2, "0") : String(lo).padStart(2, "0") + "-" + String(hi).padStart(2, "0")));
+    const inBand = lastRoll && lastRoll.roll >= lo && lastRoll.roll <= hi;
+    h += "<tr><th>" + label + "</th>" + RANKS.map((r, i) =>
+      '<td class="w' + colourOf(i, lo) + (inBand && lastRoll.rank === i ? " hit" : "") + '"></td>').join("") + "</tr>";
+    lo = hi + 1;
+  }
+  $("chart").innerHTML = h;
+  if (lastRoll) {
+    $("chartNote").textContent = "Last roll: " + lastRoll.roll + " on the " + rname(lastRoll.rank) + " column, a " + COLOURS[colourOf(lastRoll.rank, lastRoll.roll)] + " result.";
+  }
+}
+
+function render() {
+  if (!S) renderCreate();
+  else {
+    renderSheet();
+    if (S.mode === "fight") renderFight();
+    else if (S.mode === "defeat") renderDefeat();
+    else renderScene();
+  }
+  renderChart();
+}
+
+function startOver() {
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+  S = null;
+  newDraft();
+  render();
+}
+
+function handle(act, arg) {
+  if (act === "reroll") { rollAbilities(); render(); }
+  else if (act === "begin") { if (draft.powers.length === 2) beginGame(); }
+  else if (act === "want") { S.want = +arg; render(); }
+  else if (act === "choice") { SCENES[S.scene].choices().filter(Boolean)[+arg].run(); }
+  else if (act === "target") { S.fight.target = +arg; render(); }
+  else if (act === "do") { heroAct(arg); }
+  else if (act === "retry") { retryFight(); }
+  else if (act === "new") { startOver(); }
+}
+
+if (typeof document !== "undefined") {
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-act]");
+    if (b && !b.disabled) handle(b.dataset.act, b.dataset.arg);
+  });
+  document.addEventListener("change", e => {
+    if (e.target.dataset && "guard" in e.target.dataset && S) { S.guard = e.target.checked; save(); return; }
+    const p = e.target.dataset && e.target.dataset.power;
+    if (!p || !draft) return;
+    if (e.target.checked) { if (draft.powers.length < 2) draft.powers.push(p); }
+    else draft.powers = draft.powers.filter(x => x !== p);
+    render();
+  });
+  document.addEventListener("input", e => {
+    if (e.target.id === "name" && draft) draft.name = e.target.value;
+  });
+  $("restart").onclick = startOver;
+  $("rollRank").innerHTML = RANKS.map((r, i) => '<option value="' + i + '"' + (i === CAMPAIGN ? " selected" : "") + ">" + r[0] + "</option>").join("");
+  $("rollBtn").onclick = () => {
+    const rank = +$("rollRank").value, roll = d100(), c = colourOf(rank, roll);
+    lastRoll = { rank, roll };
+    $("rollOut").innerHTML = chip(roll, c);
+    renderChart();
+  };
+  S = load();
+  if (!S) newDraft();
+  render();
+}
+</script>
+</body>
+</html>
